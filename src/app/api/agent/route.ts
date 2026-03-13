@@ -20,7 +20,12 @@ export async function POST(req: NextRequest) {
           controller.enqueue(new TextEncoder().encode(data));
         }
       } catch (error) {
-        const errorEvent = { event: "done", data: "error" };
+        const status = (error as any)?.status ?? (error as any)?.statusCode;
+        const isRateLimit = status === 429;
+        const message = isRateLimit
+          ? "Rate limit reached — please wait 30 seconds and try again"
+          : "An error occurred while generating content. Please try again.";
+        const errorEvent = { event: "done", data: message };
         controller.enqueue(
           new TextEncoder().encode(`data: ${JSON.stringify(errorEvent)}\n\n`)
         );

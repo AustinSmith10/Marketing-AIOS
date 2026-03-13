@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DDEG Marketing Agent",
+  title: "Jamal the Marketing Agent",
   description: "AI-powered marketing content for DDEG engineering",
 };
 
@@ -22,7 +22,7 @@ export default function RootLayout({
               </div>
               <div className="leading-tight">
                 <div className="font-bold text-[#0b1f5c]">DDEG</div>
-                <div className="text-sm text-gray-500">Marketing Agent</div>
+                <div className="text-sm text-gray-500">Jamal the Marketing Agent</div>
               </div>
             </div>
           </nav>

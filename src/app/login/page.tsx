@@ -59,7 +59,7 @@ export default function LoginPage() {
             D
           </div>
           <h1 className="text-xl font-bold text-[#0b1f5c]">
-            DDEG Marketing Agent
+            Jamal the Marketing Agent
           </h1>
           <p className="mb-8 mt-1 text-sm text-gray-500">
             Sign in to continue

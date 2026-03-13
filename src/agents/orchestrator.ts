@@ -1,5 +1,4 @@
 import { AgentStreamEvent, ContentBrief } from "@/types";
-import { runResearchAgent } from "@/agents/research";
 import { getSeoKeywords, getSeoReview } from "@/agents/seo";
 import { runBlogAgent } from "@/agents/blog";
 import { runLinkedInAgent } from "@/agents/linkedin";
@@ -8,17 +7,9 @@ import { runCapabilityAgent } from "@/agents/capability";
 export async function* runOrchestrator(
   brief: ContentBrief
 ): AsyncGenerator<AgentStreamEvent> {
-  let researchBrief = "";
+  const researchBrief = "";
 
-  if (brief.includeResearch) {
-    try {
-      researchBrief = await runResearchAgent(brief);
-      yield { event: "research", data: researchBrief };
-    } catch (error) {
-      console.error(error);
-      researchBrief = "";
-    }
-  }
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   try {
     const seoKeywords = await getSeoKeywords(brief);
@@ -26,6 +17,8 @@ export async function* runOrchestrator(
   } catch (error) {
     console.error(error);
   }
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const writingAgent =
     brief.contentType === "linkedin"

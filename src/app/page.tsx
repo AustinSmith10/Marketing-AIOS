@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import BriefForm from "@/components/BriefForm";
 import ContentOutput from "@/components/ContentOutput";
 import { AgentStreamEvent, ContentBrief, GeneratedContent } from "@/types";
@@ -10,6 +11,7 @@ import { copyToClipboard } from "@/lib/export";
 import { User } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isComplete, setIsComplete] = useState<boolean>(false);
   const [streamedContent, setStreamedContent] = useState<string>("");
@@ -124,64 +126,86 @@ export default function Home() {
     [currentBrief, seoNotes, researchBrief, currentUser]
   );
 
+  const handleLogout = useCallback(async () => {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }, [router]);
+
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex items-center gap-2 border-b border-gray-200">
-        <button
-          type="button"
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "generate"
-              ? "border-b-2 border-[#0b1f5c] text-[#0b1f5c] font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("generate")}
-        >
-          Generate Content
-        </button>
-        <button
-          type="button"
-          className={`px-4 py-2 text-sm transition-colors ${
-            activeTab === "library"
-              ? "border-b-2 border-[#0b1f5c] text-[#0b1f5c] font-medium"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-          onClick={() => setActiveTab("library")}
-        >
-          Content Library
-        </button>
-      </div>
-
-      {activeTab === "generate" && (
-        <div
-          className={
-            hasStarted
-              ? "grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"
-              : "max-w-2xl mx-auto mt-6"
-          }
-        >
-          <div>
-            <BriefForm onSubmit={handleSubmit} isLoading={isStreaming} />
+      <div className="rounded-xl bg-white p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-end">
+          <div className="flex items-center gap-3 text-sm">
+            {currentUser?.email && (
+              <span className="text-gray-600">{currentUser.email}</span>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            >
+              Log out
+            </button>
           </div>
-
-          {hasStarted && (
-            <div>
-              <ContentOutput
-                content={streamedContent}
-                isStreaming={isStreaming}
-                isComplete={isComplete}
-                seoNotes={seoNotes}
-                researchBrief={researchBrief}
-                savedContent={savedContent}
-                onSave={handleSave}
-              />
-            </div>
-          )}
         </div>
-      )}
 
-      {activeTab === "library" && (
-        <div className="mt-6">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 border-b border-gray-200">
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm transition-colors ${
+              activeTab === "generate"
+                ? "border-b-2 border-[#0b1f5c] text-[#0b1f5c] font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("generate")}
+          >
+            Generate Content
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm transition-colors ${
+              activeTab === "library"
+                ? "border-b-2 border-[#0b1f5c] text-[#0b1f5c] font-medium"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("library")}
+          >
+            Content Library
+          </button>
+        </div>
+
+        {activeTab === "generate" && (
+          <div
+            className={
+              hasStarted
+                ? "grid grid-cols-1 gap-6 pt-6 lg:grid-cols-2"
+                : "mx-auto max-w-2xl pt-6"
+            }
+          >
+            <div>
+              <BriefForm onSubmit={handleSubmit} isLoading={isStreaming} />
+            </div>
+
+            {hasStarted && (
+              <div>
+                <ContentOutput
+                  content={streamedContent}
+                  isStreaming={isStreaming}
+                  isComplete={isComplete}
+                  seoNotes={seoNotes}
+                  researchBrief={researchBrief}
+                  savedContent={savedContent}
+                  onSave={handleSave}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "library" && (
+          <div className="pt-6">
+            <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-900">
                 Content Library
@@ -200,20 +224,20 @@ export default function Home() {
             </button>
           </div>
 
-          {libraryItems.length === 0 ? (
-            <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white text-center text-gray-400">
-              <p className="text-sm font-medium">No content saved yet</p>
-              <p className="mt-1 text-xs">
-                Generate your first piece using the Generate Content tab.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {libraryItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex h-full flex-col justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
-                >
+            {libraryItems.length === 0 ? (
+              <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white text-center text-gray-400">
+                <p className="text-sm font-medium">No content saved yet</p>
+                <p className="mt-1 text-xs">
+                  Generate your first piece using the Generate Content tab.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {libraryItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex h-full flex-col justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                  >
                   <div className="space-y-2">
                     <div className="text-sm font-semibold text-gray-900">
                       {item.brief.topic}
@@ -276,33 +300,34 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      type="button"
-                      className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-50"
-                      onClick={async () => {
-                        await copyToClipboard(item);
-                      }}
-                    >
-                      Copy
-                    </button>
-                    <button
-                      type="button"
-                      className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-50"
-                      onClick={async () => {
-                        await deleteContent(item.id);
-                        await loadLibrary();
-                      }}
-                    >
-                      Delete
-                    </button>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        type="button"
+                        className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-50"
+                        onClick={async () => {
+                          await copyToClipboard(item);
+                        }}
+                      >
+                        Copy
+                      </button>
+                      <button
+                        type="button"
+                        className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-50"
+                        onClick={async () => {
+                          await deleteContent(item.id);
+                          await loadLibrary();
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

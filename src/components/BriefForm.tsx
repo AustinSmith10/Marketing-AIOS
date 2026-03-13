@@ -24,7 +24,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
   const [topic, setTopic] = useState<string>("");
   const [keyPoints, setKeyPoints] = useState<string>("");
   const [targetLength, setTargetLength] = useState<string>("medium");
-  const [includeResearch, setIncludeResearch] = useState<boolean>(false);
   const [topicError, setTopicError] = useState<string | null>(null);
 
   const handleSubmit = (e: FormEvent) => {
@@ -45,7 +44,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
       topic: topic.trim(),
       keyPoints: keyPoints.trim() || undefined,
       targetLength,
-      includeResearch,
+      includeResearch: false,
     };
 
     onSubmit(brief);
@@ -158,22 +157,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
             placeholder="Add specific angles, points, or notes for the agent"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0b1f5c] focus:outline-none focus:ring-1 focus:ring-[#0b1f5c]"
           />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <input
-            id="include-research"
-            type="checkbox"
-            checked={includeResearch}
-            onChange={(e) => setIncludeResearch(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-[#0b1f5c] focus:ring-[#0b1f5c]"
-          />
-          <label
-            htmlFor="include-research"
-            className="text-sm text-gray-700"
-          >
-            Run research agent first (adds 30–60 seconds)
-          </label>
         </div>
 
         <Button
