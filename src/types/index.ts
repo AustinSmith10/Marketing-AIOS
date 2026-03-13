@@ -42,6 +42,8 @@ export interface GeneratedContent {
   researchBrief?: string;
   createdAt: string;
   status: "draft" | "reviewed" | "exported";
+  userEmail?: string;
+  userName?: string;
 }
 
 export type AgentStreamEvent = {
