@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { GeneratedContent } from "@/types";
+
+const ANALYTICS_PASSWORD = "DDEG123!";
 
 // Claude Sonnet 4.6 pricing (USD per million tokens)
 const INPUT_COST_PER_M = 3.0;
@@ -34,6 +37,51 @@ interface AnalyticsTabProps {
 }
 
 export default function AnalyticsTab({ items, onRefresh }: AnalyticsTabProps) {
+  const [input, setInput] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [error, setError] = useState(false);
+
+  if (!unlocked) {
+    return (
+      <div className="pt-6 flex justify-center">
+        <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Analytics</h2>
+            <p className="text-sm text-gray-400 mt-0.5">Enter the password to continue</p>
+          </div>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (input === ANALYTICS_PASSWORD) {
+              setUnlocked(true);
+              setError(false);
+            } else {
+              setError(true);
+              setInput("");
+            }
+          }} className="space-y-3">
+            <input
+              type="password"
+              value={input}
+              onChange={(e) => { setInput(e.target.value); setError(false); }}
+              placeholder="Password"
+              autoFocus
+              className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors ${
+                error ? "border-red-300 bg-red-50 placeholder-red-300" : "border-gray-200 focus:border-[#0b1f5c]"
+              }`}
+            />
+            {error && <p className="text-xs text-red-500">Incorrect password</p>}
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-[#0b1f5c] px-4 py-2 text-sm font-medium text-white hover:bg-[#1539a8] transition-colors"
+            >
+              Unlock
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   const tracked = items.filter(
     (i) => (i.inputTokens ?? 0) > 0 || (i.outputTokens ?? 0) > 0
   );
