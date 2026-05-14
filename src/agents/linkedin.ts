@@ -1,5 +1,5 @@
 import { anthropic, MODEL } from "@/lib/anthropic";
-import { ContentBrief } from "@/types";
+import { AgentUsage, ContentBrief } from "@/types";
 import {
   getBaseSystemPrompt,
   getAudiencePrompt,
@@ -8,7 +8,8 @@ import {
 
 export async function* runLinkedInAgent(
   brief: ContentBrief,
-  researchBrief?: string
+  researchBrief?: string,
+  onUsage?: (usage: AgentUsage) => void
 ): AsyncGenerator<string> {
   const systemPrompt = [
     getBaseSystemPrompt(),
@@ -55,5 +56,12 @@ export async function* runLinkedInAgent(
       yield chunk.delta.text;
     }
   }
-}
 
+  const finalMsg = await stream.finalMessage();
+  if (onUsage) {
+    onUsage({
+      inputTokens: finalMsg.usage.input_tokens,
+      outputTokens: finalMsg.usage.output_tokens,
+    });
+  }
+}

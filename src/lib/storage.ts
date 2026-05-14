@@ -17,7 +17,35 @@ type ContentRow = {
   research_brief: string | null;
   created_at: string;
   status: GeneratedContent["status"];
+  input_tokens: number | null;
+  output_tokens: number | null;
+  scheduled_date: string | null; // YYYY-MM-DD
 };
+
+function rowToContent(row: ContentRow): GeneratedContent {
+  return {
+    id: row.id,
+    brief: {
+      contentType: row.content_type,
+      serviceArea: row.service_area,
+      audience: row.audience,
+      tone: row.tone,
+      topic: row.topic,
+      targetLength: row.target_length ?? undefined,
+      includeResearch: Boolean(row.research_brief),
+    },
+    content: row.content,
+    seoNotes: row.seo_notes ?? undefined,
+    researchBrief: row.research_brief ?? undefined,
+    createdAt: row.created_at,
+    status: row.status,
+    userEmail: row.user_email,
+    userName: row.user_name ?? undefined,
+    inputTokens: row.input_tokens ?? undefined,
+    outputTokens: row.output_tokens ?? undefined,
+    scheduledDate: row.scheduled_date ?? undefined,
+  };
+}
 
 export async function saveContent(
   content: Omit<GeneratedContent, "id" | "createdAt">,
@@ -44,6 +72,9 @@ export async function saveContent(
         seo_notes: content.seoNotes ?? null,
         research_brief: content.researchBrief ?? null,
         status: content.status,
+        input_tokens: content.inputTokens ?? null,
+        output_tokens: content.outputTokens ?? null,
+        scheduled_date: content.scheduledDate ?? null,
       })
       .select()
       .single<ContentRow>();
@@ -53,27 +84,7 @@ export async function saveContent(
       return null;
     }
 
-    const mapped: GeneratedContent = {
-      id: data.id,
-      brief: {
-        contentType: data.content_type,
-        serviceArea: data.service_area,
-        audience: data.audience,
-        tone: data.tone,
-        topic: data.topic,
-        targetLength: data.target_length ?? undefined,
-        includeResearch: Boolean(data.research_brief),
-      },
-      content: data.content,
-      seoNotes: data.seo_notes ?? undefined,
-      researchBrief: data.research_brief ?? undefined,
-      createdAt: data.created_at,
-      status: data.status,
-      userEmail: data.user_email,
-      userName: data.user_name ?? undefined,
-    };
-
-    return mapped;
+    return rowToContent(data);
   } catch (error) {
     console.error(error);
     return null;
@@ -94,25 +105,7 @@ export async function getAllContent(): Promise<GeneratedContent[]> {
       return [];
     }
 
-    return (data as ContentRow[]).map((row) => ({
-      id: row.id,
-      brief: {
-        contentType: row.content_type,
-        serviceArea: row.service_area,
-        audience: row.audience,
-        tone: row.tone,
-        topic: row.topic,
-        targetLength: row.target_length ?? undefined,
-        includeResearch: Boolean(row.research_brief),
-      },
-      content: row.content,
-      seoNotes: row.seo_notes ?? undefined,
-      researchBrief: row.research_brief ?? undefined,
-      createdAt: row.created_at,
-      status: row.status,
-      userEmail: row.user_email,
-      userName: row.user_name ?? undefined,
-    }));
+    return (data as ContentRow[]).map(rowToContent);
   } catch (error) {
     console.error(error);
     return [];
@@ -138,10 +131,16 @@ export async function updateContent(
   try {
     const supabase = createSupabaseBrowserClient();
 
-    const updatePayload: Partial<Pick<ContentRow, "status">> = {};
-    if (updates.status) {
-      updatePayload.status = updates.status;
-    }
+    const updatePayload: Partial<
+      Pick<ContentRow, "status" | "content" | "seo_notes" | "input_tokens" | "output_tokens" | "scheduled_date">
+    > = {};
+    if (updates.status) updatePayload.status = updates.status;
+    if (updates.content) updatePayload.content = updates.content;
+    if (updates.seoNotes !== undefined) updatePayload.seo_notes = updates.seoNotes ?? null;
+    if (updates.inputTokens !== undefined) updatePayload.input_tokens = updates.inputTokens ?? null;
+    if (updates.outputTokens !== undefined) updatePayload.output_tokens = updates.outputTokens ?? null;
+    // Allow explicit null to unschedule
+    if ("scheduledDate" in updates) updatePayload.scheduled_date = updates.scheduledDate ?? null;
 
     if (Object.keys(updatePayload).length === 0) {
       return null;
@@ -154,35 +153,11 @@ export async function updateContent(
       .select()
       .single<ContentRow>();
 
-    if (error || !data) {
-      console.error(error);
-      return null;
-    }
+    if (error) throw new Error(error.message ?? JSON.stringify(error));
+    if (!data) return null;
 
-    const mapped: GeneratedContent = {
-      id: data.id,
-      brief: {
-        contentType: data.content_type,
-        serviceArea: data.service_area,
-        audience: data.audience,
-        tone: data.tone,
-        topic: data.topic,
-        targetLength: data.target_length ?? undefined,
-        includeResearch: Boolean(data.research_brief),
-      },
-      content: data.content,
-      seoNotes: data.seo_notes ?? undefined,
-      researchBrief: data.research_brief ?? undefined,
-      createdAt: data.created_at,
-      status: data.status,
-      userEmail: data.user_email,
-      userName: data.user_name ?? undefined,
-    };
-
-    return mapped;
+    return rowToContent(data);
   } catch (error) {
-    console.error(error);
-    return null;
+    throw error;
   }
 }
-

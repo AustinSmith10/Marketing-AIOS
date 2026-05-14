@@ -24,6 +24,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
   const [topic, setTopic] = useState<string>("");
   const [keyPoints, setKeyPoints] = useState<string>("");
   const [targetLength, setTargetLength] = useState<string>("medium");
+  const [includeResearch, setIncludeResearch] = useState<boolean>(false);
   const [topicError, setTopicError] = useState<string | null>(null);
 
   const handleSubmit = (e: FormEvent) => {
@@ -44,7 +45,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
       topic: topic.trim(),
       keyPoints: keyPoints.trim() || undefined,
       targetLength,
-      includeResearch: false,
+      includeResearch,
     };
 
     onSubmit(brief);
@@ -158,6 +159,19 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading }) => {
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0b1f5c] focus:outline-none focus:ring-1 focus:ring-[#0b1f5c]"
           />
         </div>
+
+        <label className="flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={includeResearch}
+            onChange={(e) => setIncludeResearch(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-[#0b1f5c] focus:ring-[#0b1f5c]"
+          />
+          <span className="text-sm text-gray-700">
+            Include web research{" "}
+            <span className="text-gray-400">(searches for current Australian industry context)</span>
+          </span>
+        </label>
 
         <Button
           type="submit"

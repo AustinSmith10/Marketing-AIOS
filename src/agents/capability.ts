@@ -1,5 +1,5 @@
 import { anthropic, MODEL } from "@/lib/anthropic";
-import { ContentBrief } from "@/types";
+import { AgentUsage, ContentBrief } from "@/types";
 import {
   getBaseSystemPrompt,
   getAudiencePrompt,
@@ -8,7 +8,8 @@ import {
 
 export async function* runCapabilityAgent(
   brief: ContentBrief,
-  researchBrief?: string
+  researchBrief?: string,
+  onUsage?: (usage: AgentUsage) => void
 ): AsyncGenerator<string> {
   const systemPrompt = [
     getBaseSystemPrompt(),
@@ -16,12 +17,19 @@ export async function* runCapabilityAgent(
     getServicePrompt(brief.serviceArea as any),
   ].join("\n\n");
 
+  const today = new Date().toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   const userParts: string[] = [
+    `Today's date is ${today}. All content must reflect the current year and current industry context.`,
     `Topic: ${brief.topic}`,
     brief.keyPoints ? `Key points to cover:\n${brief.keyPoints}` : "",
     `Tone: ${brief.tone}`,
     researchBrief
-      ? `Research brief (use to inform the capability statement):\n${researchBrief}`
+      ? `Content plan — use the strategy and research findings from this plan to inform the capability statement:\n\n${researchBrief}`
       : "",
     "Write a capability statement that:",
     '- Is written in third person (e.g. "DDEG provides...", "The DDEG team...")',
@@ -54,5 +62,12 @@ export async function* runCapabilityAgent(
       yield chunk.delta.text;
     }
   }
-}
 
+  const finalMsg = await stream.finalMessage();
+  if (onUsage) {
+    onUsage({
+      inputTokens: finalMsg.usage.input_tokens,
+      outputTokens: finalMsg.usage.output_tokens,
+    });
+  }
+}
