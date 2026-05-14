@@ -43,7 +43,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isLoading, disabled }) 
     <div className={`rounded-xl bg-white shadow-sm overflow-hidden ${disabled ? "opacity-60 pointer-events-none" : ""}`}>
       <div className="px-6 py-4 border-b border-gray-100">
         <h2 className="text-sm font-semibold text-gray-900">Content Brief</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Fill in the brief — we'll build a content plan before writing</p>
+        <p className="text-xs text-gray-400 mt-0.5">Fill in the brief &mdash; we&apos;ll build a content plan before writing</p>
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-5">

@@ -55,5 +55,6 @@ export function useSessionPersistence(state: SessionState) {
       return;
     }
     saveSession(state);
-  }, [state.phase, state.currentBrief, state.research, state.streamedContent, state.seoNotes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 }

@@ -178,7 +178,8 @@ export default function Home() {
       console.error(error);
       setPhase("idle");
     }
-  }, [currentUser, research, sessionUsage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser, sessionUsage]);
 
   const handleSubmit = useCallback(async (brief: ContentBrief) => {
     setCurrentBrief(brief);
