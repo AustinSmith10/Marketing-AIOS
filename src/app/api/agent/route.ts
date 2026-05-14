@@ -3,7 +3,8 @@ import { ContentBrief } from "@/types";
 import { runOrchestrator } from "@/agents/orchestrator";
 
 export async function POST(req: NextRequest) {
-  const brief: ContentBrief = await req.json();
+  const { brief, researchBrief }: { brief: ContentBrief; researchBrief?: string } =
+    await req.json();
 
   if (!brief?.topic || !brief?.contentType) {
     return new Response(
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const event of runOrchestrator(brief)) {
+        for await (const event of runOrchestrator(brief, researchBrief)) {
           const data = `data: ${JSON.stringify(event)}\n\n`;
           controller.enqueue(new TextEncoder().encode(data));
         }
@@ -44,4 +45,3 @@ export async function POST(req: NextRequest) {
     },
   });
 }
-

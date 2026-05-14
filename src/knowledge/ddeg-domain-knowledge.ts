@@ -402,11 +402,13 @@ WORDS TO AVOID:
 CONTENT FORMATS BY TYPE:
 
 BLOG POSTS:
-- 800–1,500 words for thought leadership
-- Lead with a real problem or industry pain point
-- Include specific code references where relevant
-- End with a clear takeaway or call to action
-- Avoid jargon-heavy intros — start with the insight, then unpack it
+- 1,500–2,500 words for thought leadership — depth is the point, not brevity
+- Open with a hook: a specific problem, counterintuitive claim, or real cost/consequence. No warm-up sentences.
+- Use the Hook → Meat → Payoff arc: earn attention, teach thoroughly, close with a clear takeaway
+- H2 headings must be descriptive and specific, not generic ("Why Surveyors Reject Performance Solutions" not "The Approval Process")
+- Include specific code references, building classes, NCC sections, real cost ranges — vague content is worthless to this audience
+- End with a concrete call to action, not a recap
+- Never start with "In today's...", "It's important to...", or any variant of restating the title
 
 LINKEDIN POSTS:
 - 150–300 words for standard posts; up to 500 for longer thought pieces

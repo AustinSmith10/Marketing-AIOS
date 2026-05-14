@@ -34,6 +34,11 @@ export interface ContentBrief {
   includeResearch: boolean;
 }
 
+export interface AgentUsage {
+  inputTokens: number;
+  outputTokens: number;
+}
+
 export interface GeneratedContent {
   id: string;
   brief: ContentBrief;
@@ -41,12 +46,14 @@ export interface GeneratedContent {
   seoNotes?: string;
   researchBrief?: string;
   createdAt: string;
-  status: "draft" | "reviewed" | "exported";
+  status: "draft" | "reviewed" | "exported" | "ready";
   userEmail?: string;
   userName?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  scheduledDate?: string; // YYYY-MM-DD
 }
 
-export type AgentStreamEvent = {
-  event: "research" | "seo-pre" | "content" | "seo-post" | "done";
-  data: string;
-};
+export type AgentStreamEvent =
+  | { event: "research" | "seo-pre" | "content" | "seo-post" | "done"; data: string }
+  | { event: "usage"; data: AgentUsage };

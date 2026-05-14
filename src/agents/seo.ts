@@ -1,7 +1,9 @@
 import { anthropic, MODEL } from "@/lib/anthropic";
-import { ContentBrief } from "@/types";
+import { AgentUsage, ContentBrief } from "@/types";
 
-export async function getSeoKeywords(brief: ContentBrief): Promise<string> {
+export async function getSeoKeywords(
+  brief: ContentBrief
+): Promise<{ text: string; usage: AgentUsage }> {
   try {
     const response = await anthropic.messages.create({
       model: MODEL,
@@ -24,17 +26,23 @@ export async function getSeoKeywords(brief: ContentBrief): Promise<string> {
       ],
     });
 
-    return (response.content[0] as any).text ?? "";
+    return {
+      text: (response.content[0] as any).text ?? "",
+      usage: {
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      },
+    };
   } catch (error) {
     console.error(error);
-    return "";
+    return { text: "", usage: { inputTokens: 0, outputTokens: 0 } };
   }
 }
 
 export async function getSeoReview(
   brief: ContentBrief,
   content: string
-): Promise<string> {
+): Promise<{ text: string; usage: AgentUsage }> {
   try {
     const response = await anthropic.messages.create({
       model: MODEL,
@@ -55,10 +63,15 @@ export async function getSeoReview(
       ],
     });
 
-    return (response.content[0] as any).text ?? "";
+    return {
+      text: (response.content[0] as any).text ?? "",
+      usage: {
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      },
+    };
   } catch (error) {
     console.error(error);
-    return "";
+    return { text: "", usage: { inputTokens: 0, outputTokens: 0 } };
   }
 }
-
