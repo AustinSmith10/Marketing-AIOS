@@ -10,7 +10,7 @@ interface ContentPlanProps {
   isLoading: boolean;
   onApprove: (plan: string, notes: string) => void;
   onResearchMore: (reprompt: string, urls: string, currentPlan: string) => void;
-  onReject: (reprompt: string, urls: string) => void;
+  onCancel: () => void;
 }
 
 const ContentPlan: React.FC<ContentPlanProps> = ({
@@ -18,7 +18,7 @@ const ContentPlan: React.FC<ContentPlanProps> = ({
   isLoading,
   onApprove,
   onResearchMore,
-  onReject,
+  onCancel,
 }) => {
   const [editedPlan, setEditedPlan] = useState(plan);
   const [mode, setMode] = useState<"preview" | "edit">("preview");
@@ -176,10 +176,10 @@ const ContentPlan: React.FC<ContentPlanProps> = ({
           <Button
             variant="ghost"
             className="w-full"
-            onClick={() => onReject(reprompt, urls)}
+            onClick={onCancel}
             disabled={isLoading}
           >
-            Start Over
+            ← Start Over
           </Button>
         </div>
       </div>

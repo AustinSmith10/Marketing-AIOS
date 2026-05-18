@@ -47,6 +47,7 @@ export interface GeneratedContent {
   researchBrief?: string;
   createdAt: string;
   status: "draft" | "reviewed" | "exported" | "ready";
+  userId?: string;
   userEmail?: string;
   userName?: string;
   inputTokens?: number;

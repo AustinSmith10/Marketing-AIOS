@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import BriefForm from "@/components/BriefForm";
@@ -24,6 +24,7 @@ export default function Home() {
   const [currentBrief, setCurrentBrief] = useState<ContentBrief | null>(null);
   const [research, setResearch] = useState<string>("");
   const [isResearchLoading, setIsResearchLoading] = useState<boolean>(false);
+  const researchAbortRef = useRef<AbortController | null>(null);
   const [streamedContent, setStreamedContent] = useState<string>("");
   const [seoNotes, setSeoNotes] = useState<string>("");
 
@@ -48,6 +49,7 @@ export default function Home() {
   }, []);
   const [libraryItems, setLibraryItems] = useState<GeneratedContent[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const isAdmin = currentUser?.email?.endsWith("@ddeg.com.au") ?? false;
 
   function switchTab(tab: "generate" | "library" | "calendar" | "analytics") {
     localStorage.setItem("activeTab", tab);
@@ -84,19 +86,28 @@ export default function Home() {
     brief: ContentBrief,
     options: { reprompt?: string; additionalUrls?: string; existingResearch?: string } = {}
   ): Promise<string> => {
-    const res = await fetch("/api/research", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brief, ...options }),
-    });
-    const { research: result, usage } = await res.json();
-    if (usage) {
-      setSessionUsage((prev) => ({
-        inputTokens: prev.inputTokens + (usage.inputTokens ?? 0),
-        outputTokens: prev.outputTokens + (usage.outputTokens ?? 0),
-      }));
+    researchAbortRef.current?.abort();
+    const controller = new AbortController();
+    researchAbortRef.current = controller;
+    try {
+      const res = await fetch("/api/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief, ...options }),
+        signal: controller.signal,
+      });
+      const { research: result, usage } = await res.json();
+      if (usage) {
+        setSessionUsage((prev) => ({
+          inputTokens: prev.inputTokens + (usage.inputTokens ?? 0),
+          outputTokens: prev.outputTokens + (usage.outputTokens ?? 0),
+        }));
+      }
+      return result ?? "";
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return "";
+      throw err;
     }
-    return result ?? "";
   }, []);
 
   const runWriting = useCallback(async (brief: ContentBrief, researchBrief: string) => {
@@ -190,6 +201,7 @@ export default function Home() {
     setSessionUsage({ inputTokens: 0, outputTokens: 0 });
     setPhase("researching");
     const result = await runResearch(brief);
+    if (!result) return;
     setResearch(result);
     setPhase("research-review");
   }, [runResearch]);
@@ -253,6 +265,8 @@ export default function Home() {
   }, []);
 
   const handleReset = useCallback(() => {
+    researchAbortRef.current?.abort();
+    researchAbortRef.current = null;
     clearSession();
     setPhase("idle");
     setCurrentBrief(null);
@@ -360,6 +374,12 @@ export default function Home() {
                       ? "Researching and mapping out the strategy"
                       : "Mapping out the strategy and structure"}
                   </p>
+                  <button
+                    onClick={handleReset}
+                    className="mt-6 text-xs text-gray-400 hover:text-gray-600 underline"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             )}
@@ -370,7 +390,7 @@ export default function Home() {
                 isLoading={isResearchLoading}
                 onApprove={handleApprove}
                 onResearchMore={handleResearchMore}
-                onReject={handleReject}
+                onCancel={handleReset}
               />
             )}
 
@@ -538,16 +558,18 @@ export default function Home() {
                         >
                           Copy
                         </button>
-                        <button
-                          type="button"
-                          className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-50"
-                          onClick={async () => {
-                            await deleteContent(item.id);
-                            await loadLibrary();
-                          }}
-                        >
-                          Delete
-                        </button>
+                        {(isAdmin || currentUser?.id === item.userId) && (
+                          <button
+                            type="button"
+                            className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs text-red-600 transition-colors hover:bg-red-50"
+                            onClick={async () => {
+                              await deleteContent(item.id);
+                              await loadLibrary();
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -35,6 +35,7 @@ function rowToContent(row: ContentRow): GeneratedContent {
       includeResearch: Boolean(row.research_brief),
     },
     content: row.content,
+    userId: row.user_id,
     seoNotes: row.seo_notes ?? undefined,
     researchBrief: row.research_brief ?? undefined,
     createdAt: row.created_at,
@@ -112,15 +113,17 @@ export async function getAllContent(): Promise<GeneratedContent[]> {
   }
 }
 
-export async function deleteContent(id: string): Promise<void> {
+export async function deleteContent(id: string): Promise<boolean> {
   try {
-    const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.from("content").delete().eq("id", id);
-    if (error) {
-      console.error(error);
-    }
+    const res = await fetch("/api/delete-content", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    return res.ok;
   } catch (error) {
-    console.error(error);
+    console.error("deleteContent exception:", error);
+    return false;
   }
 }
 
